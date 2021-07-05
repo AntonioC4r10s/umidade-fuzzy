@@ -18,7 +18,7 @@ npessoas_poucas = fuzz.trapmf(x_npessoas, [1, 1, 5, 12])
 npessoas_muitas = fuzz.trapmf(x_npessoas, [6, 15, 21, 21])
 
 umidif_alto = fuzz.trapmf(x_umidificador, [0, 0, 25, 50])
-umidif_normal = fuzz.trimf(x_umidificador, [10, 50, 90])
+umidif_normal = fuzz.trimf(x_umidificador, [20, 50, 80])
 umidif_desligado = fuzz.trapmf(x_umidificador, [50, 75, 100, 100])
 
 
@@ -54,9 +54,8 @@ plt.tight_layout()
 
 #Regras
 
-valor_umidade = 40
-valor_pessoas = 5
-
+valor_umidade = 70
+valor_pessoas = 13
 
 qualid_umidade_ruim = fuzz.interp_membership(x_umidade, umid_ruim, valor_umidade)
 qualid_umidade_boa = fuzz.interp_membership(x_umidade, umid_boa, valor_umidade)
@@ -84,12 +83,46 @@ umidificador0 = np.zeros_like(x_umidificador)
 #   Visualização
 fig1, ax4 = plt.subplots(figsize=(8, 3))
 
-ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_desligado, facecolor='b', alpha=0.7)
+ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_desligado, facecolor='b', alpha=0.7, label='desligado')
 ax4.plot(x_umidificador, umidif_desligado, 'b', linewidth=0.5, linestyle='--', )
-ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_normal, facecolor='g', alpha=0.7)
+ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_normal, facecolor='g', alpha=0.7, label='normal')
 ax4.plot(x_umidificador, umidif_normal, 'g', linewidth=0.5, linestyle='--')
-ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_alto, facecolor='r', alpha=0.7)
+ax4.fill_between(x_umidificador, umidificador0, ativa_umidificado_alto, facecolor='r', alpha=0.7, label='alto')
 ax4.plot(x_umidificador, umidif_alto, 'r', linewidth=0.5, linestyle='--')
 ax4.set_title('Comportamento do Umidificador')
+ax4.legend()
+
+for ax in (ax4,):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+# Aggregate all three output membership functions together
+aggregated = np.fmax(ativa_umidificado_alto,
+                     np.fmax(ativa_umidificado_normal, ativa_umidificado_desligado))
+
+# Calculate defuzzified result
+tip = fuzz.defuzz(x_umidificador, aggregated, 'centroid')
+tip_activation = fuzz.interp_membership(x_umidificador, aggregated, tip)  # for plot
+
+# Visualize this
+fig3, ax5 = plt.subplots(figsize=(8, 3))
+
+ax5.plot(x_umidificador, umidif_alto, 'b', linewidth=0.5, linestyle='--', )
+ax5.plot(x_umidificador, umidif_normal, 'g', linewidth=0.5, linestyle='--')
+ax5.plot(x_umidificador, umidif_desligado, 'r', linewidth=0.5, linestyle='--')
+ax5.fill_between(x_umidificador, umidificador0, aggregated, facecolor='Orange', alpha=0.7)
+ax5.plot([tip, tip], [0, tip_activation], 'k', linewidth=1.5, alpha=0.9, label=f'Saída = {tip:.2f}')
+ax5.set_title('Associação e resultado agregado (linha)')
+ax5.legend()
+
+for ax in (ax5,):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+plt.tight_layout()
 
 plt.show()
