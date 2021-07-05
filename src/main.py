@@ -54,8 +54,8 @@ plt.tight_layout()
 
 #Regras
 
-valor_umidade = 70
-valor_pessoas = 13
+valor_umidade = 90
+valor_pessoas = 2
 
 qualid_umidade_ruim = fuzz.interp_membership(x_umidade, umid_ruim, valor_umidade)
 qualid_umidade_boa = fuzz.interp_membership(x_umidade, umid_boa, valor_umidade)
